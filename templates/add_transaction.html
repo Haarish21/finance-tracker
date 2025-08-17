@@ -1,0 +1,23 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Add Transaction</h2>
+    <form method="post">
+        <label>Date</label>
+        <input type="date" name="date" required>
+        <label>Amount (₹)</label>
+        <input type="number" step="0.01" name="amount" required>
+        <label>Type</label>
+        <select name="type" required>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+        </select>
+        <label>Category</label>
+        <input type="text" name="category" placeholder="e.g., Food, Rent, Travel" required>
+        <label>Description (optional)</label>
+        <input type="text" name="description">
+        <button type="submit">Save</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="nav">
+    <div class="brand"><a href="{{ url_for('dashboard') }}">💰 Finance Tracker</a></div>
+
+    <!-- Hamburger button for mobile -->
+    <div class="hamburger" id="hamburger">&#9776;</div>
+
+    <div class="nav-links" id="navLinks">
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('add_transaction') }}">Add</a>
+        <a href="{{ url_for('upload_transactions') }}">Upload CSV</a>
+        <a href="{{ url_for('export_csv') }}">Export</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-wrap">
+              {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Hamburger JS -->
+    <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+
+    hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('show');
+    });
+
+    // Close side menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+            navLinks.classList.remove('show');
+        }
+    });
+</script>
+
+</body>
+</html>

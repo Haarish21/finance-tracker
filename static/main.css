@@ -1,0 +1,345 @@
+:root {
+  --bg:#0b1020;
+  --card:#131a33;
+  --text:#f5f7ff;
+  --muted:#a7b0d8;
+  --accent:#7aa2f7;
+  --good:#31c48d;
+  --bad:#ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.nav {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 24px;
+  background: rgba(0,0,0,.2);
+  position: sticky;
+  top:0;
+  backdrop-filter: blur(6px);
+}
+
+.brand a {
+  font-weight:700;
+  font-size: 1.2rem;
+}
+
+.nav-links a {
+  margin-left: 16px;
+  font-weight:500;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 20px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+label {
+  display:block;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+
+input, select {
+  width:100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #2a355f;
+  background: #0f1530;
+  color: var(--text);
+}
+
+button {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border:0;
+  border-radius: 10px;
+  background: var(--accent);
+  color:#0b1020;
+  font-weight:700;
+  cursor:pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+  gap:24px;
+}
+
+/* Base card */
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Separate heights for each card */
+.grid .card:nth-child(1) {
+  min-height: 180px; /* Summary */
+}
+
+.grid .card:nth-child(2) {
+  min-height: 320px; /* Trend chart */
+}
+
+.grid .card:nth-child(3) {
+  min-height: 300px; /* Pie chart */
+}
+
+.grid .card:nth-child(4) {
+  min-height: 220px; /* Recommendations */
+}
+
+.grid .card:nth-child(5) {
+  min-height: 400px; /* Transactions box */
+  min-width: 600px;
+  padding: 24px;
+  overflow-x: auto; /* Scroll if table is wide */
+}
+
+h2,h3 {
+  margin: 0 0 16px;
+}
+
+.summary {
+  display:flex;
+  flex-wrap: wrap;
+  gap:20px;
+}
+
+.summary div {
+  background:#0f1530;
+  border:1px solid #2a355f;
+  border-radius:12px;
+  padding:16px 20px;
+  min-width:140px;
+  text-align:center;
+}
+
+.summary span {
+  display:block;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.summary small {
+  color: var(--muted);
+}
+
+canvas {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+.flash-wrap {
+  margin-bottom: 16px;
+}
+
+.flash {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.flash.success {
+  background: rgba(49,196,141,.15);
+  border: 1px solid var(--good);
+}
+
+.flash.error {
+  background: rgba(239,68,68,.15);
+  border: 1px solid var(--bad);
+}
+
+/* Transactions box */
+#transactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#transactionsTable th,
+#transactionsTable td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #2a355f;
+  vertical-align: middle;
+}
+
+#transactionsTable th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+#transactionsTable td button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#txnList li {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #0f1530;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+#txnList li div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#txnList li button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.footer {
+  text-align:center;
+  color: var(--muted);
+  padding: 30px 0 60px;
+}
+
+/* -------- Mobile Responsive -------- */
+@media (max-width: 1024px) {
+  .grid .card:nth-child(5) {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr; /* stack cards vertically */
+    gap: 16px;
+  }
+  .card {
+    min-height: auto;
+    padding: 16px;
+  }
+  .summary div {
+    min-width: 100px;
+    padding: 12px;
+    font-size: 12px;
+  }
+  input, select, button {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+  #transactionsTable th, #transactionsTable td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  #txnList li {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    font-size: 13px;
+  }
+  #txnList li button {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .nav-links a {
+    margin-left: 0;
+  }
+  .filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Hamburger menu for mobile */
+.hamburger {
+    display: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+/* Mobile side menu */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        right: -250px; /* hide off-screen initially */
+        width: 250px;
+        height: 100%;
+        background: var(--card);
+        padding-top: 60px;
+        gap: 16px;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+        transition: right 0.3s ease;
+        z-index: 1000;
+    }
+
+    .nav-links a {
+        padding: 12px 20px;
+        border-bottom: 1px solid #2a355f;
+        
+    }
+
+    .nav-links.show {
+        right: 0; /* slide in */
+    }
+}
+

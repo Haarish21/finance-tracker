@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Hello, {{ user.name.split(' ')[0] if user.name else 'User' }} 👋</h2>
+
+<!-- Year & Month Filters -->
+<div class="filters mb-4">
+  <label>Year:</label>
+  <select id="yearSelect"></select>
+
+  <label>Month:</label>
+  <select id="monthSelect">
+    <option value="all">All</option>
+    {% for m in range(1,13) %}
+      <option value="{{ m }}">{{ ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m-1] }}</option>
+    {% endfor %}
+  </select>
+
+  <button id="deleteMonthBtn" style="margin-left:10px;">Delete Month</button>
+  <button id="deleteYearBtn" style="margin-left:5px;">Delete Year</button>
+
+</div>
+
+<div class="grid">
+  <div class="card">
+      <h3>Summary</h3>
+      <div class="summary">
+          <div id="incomeBox" class="summary-box" data-type="income"><span id="income">₹0</span><small>Income</small></div>
+          <div id="expenseBox" class="summary-box" data-type="expense"><span id="expense">₹0</span><small>Expense</small></div>
+          <div><span id="balance">₹0</span><small>Balance</small></div>
+      </div>
+  </div>
+
+  <div class="card">
+      <h3>Income vs Expense (Monthly)</h3>
+      <canvas id="trendChart"></canvas>
+  </div>
+
+  <div class="card">
+      <h3>Category Breakdown</h3>
+      <canvas id="pieChart"></canvas>
+  </div>
+
+  <div class="card">
+      <h3>Smart Suggestions</h3>
+      <ul id="recs"></ul>
+      <p id="pred"></p>
+  </div>
+
+  <div class="card">
+      <h3>Transactions</h3>
+      <table id="transactionsTable">
+          <thead>
+              <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Action</th>
+              </tr>
+          </thead>
+          <tbody></tbody>
+      </table>
+  </div>
+</div>
+
+<style>
+.summary-box { cursor:pointer; display:inline-block; padding:10px; border-radius:5px; margin-right:10px; transition:0.2s; }
+.summary-box.active { background-color:#d1e7dd; }
+.nav-links.show { background: var(--card); }
+</style>
+
+<script>
+let trendChart, pieChart;
+let currentType = 'all'; // 'all', 'income', 'expense'
+
+// Fetch available years for dropdown
+async function fetchYears() {
+  const res = await fetch('/api/available_years');
+  const years = await res.json();
+  const yearSelect = document.getElementById('yearSelect');
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    yearSelect.appendChild(opt);
+  });
+  yearSelect.value = years[years.length-1];
+  loadDashboard();
+}
+
+// Load dashboard data
+async function loadDashboard() {
+  const year = document.getElementById('yearSelect').value;
+  const month = document.getElementById('monthSelect').value;
+  const query = `?year=${year}&month=${month==='all'?'':month}&type=${currentType}`;
+
+  // Summary
+  const sData = await (await fetch('/api/summary'+query)).json();
+  document.getElementById('income').textContent = '₹' + Math.round(sData.income);
+  document.getElementById('expense').textContent = '₹' + Math.round(sData.expense);
+  document.getElementById('balance').textContent = '₹' + Math.round(sData.balance);
+
+  // Highlight active box
+  document.querySelectorAll('.summary-box').forEach(box => box.classList.remove('active'));
+  if(currentType==='income') document.getElementById('incomeBox').classList.add('active');
+  if(currentType==='expense') document.getElementById('expenseBox').classList.add('active');
+
+  // Trend chart
+  const tData = await (await fetch('/api/monthly_trend?year='+year+'&type='+currentType)).json();
+  const labels = tData.map(d => d.month.split('-')[1]);
+  const income = tData.map(d => d.income);
+  const expense = tData.map(d => d.expense);
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets:[{label:'Income',data:income},{label:'Expense',data:expense}]},
+    options:{responsive:true, maintainAspectRatio:false}
+  });
+
+  // Pie chart
+  const pData = await (await fetch('/api/category_breakdown'+query)).json();
+  const pLabels = pData.map(d=>d.category);
+  const pValues = pData.map(d=>d.amount);
+  const ctx2 = document.getElementById('pieChart').getContext('2d');
+  if(pieChart) pieChart.destroy();
+  pieChart = new Chart(ctx2,{
+    type:'pie', 
+    data:{labels:pLabels,datasets:[{data:pValues}]}, 
+    options:{responsive:true, maintainAspectRatio:false}
+  });
+
+  // Recommendations
+  const rData = await (await fetch('/api/recommendations')).json();
+  const ul = document.getElementById('recs'); ul.innerHTML='';
+  rData.recommendations.forEach(t=>{ const li=document.createElement('li'); li.textContent=t; ul.appendChild(li); });
+  document.getElementById('pred').textContent='Next month expense prediction: ₹'+Math.round(rData.next_month_expense_prediction || 0);
+
+  // Transactions
+  const txs = await (await fetch(`/api/transactions?year=${year}&month=${month==='all'?'':month}&type=${currentType}`)).json();
+  const tbody = document.querySelector('#transactionsTable tbody'); tbody.innerHTML = '';
+  txs.forEach(tx=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${tx.date}</td>
+      <td>${tx.type}</td>
+      <td>${tx.category}</td>
+      <td>₹${tx.amount}</td>
+      <td>${tx.description || ''}</td>
+      <td><button class="deleteBtn" data-id="${tx.id}">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Delete transaction
+  document.querySelectorAll('.deleteBtn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(confirm('Delete this transaction?')){
+        const id = btn.getAttribute('data-id');
+        const data = await (await fetch(`/transactions/delete/${id}`, {method:'POST'})).json();
+        if(data.success){ btn.closest('tr').remove(); loadDashboard(); } else alert(data.message);
+      }
+    });
+  });
+}
+
+// Click handlers to filter by type
+document.getElementById('incomeBox').addEventListener('click', ()=>{
+  currentType = (currentType==='income') ? 'all' : 'income';
+  loadDashboard();
+});
+document.getElementById('expenseBox').addEventListener('click', ()=>{
+  currentType = (currentType==='expense') ? 'all' : 'expense';
+  loadDashboard();
+});
+
+// Filters change
+document.getElementById('yearSelect').addEventListener('change', loadDashboard);
+document.getElementById('monthSelect').addEventListener('change', loadDashboard);
+
+fetchYears();
+
+
+document.getElementById('deleteMonthBtn').addEventListener('click', async () => {
+    const year = document.getElementById('yearSelect').value;
+    const month = document.getElementById('monthSelect').value;
+    if(month==='all'){ alert('Select a specific month to delete.'); return; }
+    if(confirm(`Delete all transactions for ${month}/${year}?`)){
+        const res = await fetch('/transactions/delete_month', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:`year=${year}&month=${month}`
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadDashboard();
+    }
+});
+
+document.getElementById('deleteYearBtn').addEventListener('click', async () => {
+    const year = document.getElementById('yearSelect').value;
+    if(confirm(`Delete all transactions for year ${year}?`)){
+        const res = await fetch('/transactions/delete_year', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:`year=${year}`
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadDashboard();
+    }
+});
+
+</script>
+
+{% endblock %}

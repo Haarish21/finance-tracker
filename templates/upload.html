@@ -1,0 +1,12 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Upload CSV</h2>
+    <p>CSV headers required: <code>date,amount,type,category,description</code>. Date format: <code>YYYY-MM-DD</code>. Type: <code>income</code> or <code>expense</code>.</p>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+{% endblock %}
