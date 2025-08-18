@@ -315,12 +315,12 @@ canvas {
     color: var(--text);
 }
 
-/* Mobile side menu */
 @media (max-width: 768px) {
     .nav {
-    flex-direction: row;        /* keep brand left, hamburger right */
-    align-items: center;
-    justify-content: space-between;
+        flex-direction: row;          /* keep brand and hamburger in a row */
+        align-items: center;
+        justify-content: space-between; /* brand left, hamburger right */
+        gap: 0;
     }
 
     .hamburger {
@@ -343,14 +343,13 @@ canvas {
         z-index: 1000;
     }
 
-    .nav-links a {
-        padding: 12px 20px;
-        border-bottom: 1px solid #2a355f;
-        
-    }
-
     .nav-links.show {
         right: 0; /* slide in */
     }
-}
 
+    .nav-links a {
+        padding: 12px 20px;
+        border-bottom: 1px solid #2a355f;
+        margin-left: 0;
+    }
+}
