@@ -28,7 +28,7 @@ a {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 10px 22px;
+  padding: 12px 24px;
   background: rgba(0,0,0,.2);
   position: sticky;
   top:0;
@@ -289,9 +289,14 @@ canvas {
     font-size: 14px;
   }
   .nav {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;           /* keep brand and hamburger in a row */
+    align-items: center;
+    justify-content: space-between; /* brand left, hamburger right */
+    gap: 0;
+  }
+  .nav-links {
+    top: 0;
+    right: -250px;
   }
   .nav-links a {
     margin-left: 0;
